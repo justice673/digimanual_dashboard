@@ -132,8 +132,8 @@ export default function HelpdeskPage() {
             }}
           />
         </Grid>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <FormControl fullWidth>
+        <Grid size={{ xs: 'auto', md: 'auto' }}>
+          <FormControl sx={{ minWidth: 150 }}>
             <InputLabel>Status</InputLabel>
             <Select value={statusFilter} label="Status" onChange={(e) => setStatusFilter(e.target.value as any)}>
               <MenuItem value="all">All ({tickets.length})</MenuItem>
@@ -148,8 +148,8 @@ export default function HelpdeskPage() {
             </Select>
           </FormControl>
         </Grid>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <FormControl fullWidth>
+        <Grid size={{ xs: 'auto', md: 'auto' }}>
+          <FormControl sx={{ minWidth: 150 }}>
             <InputLabel>Priority</InputLabel>
             <Select value={priorityFilter} label="Priority" onChange={(e) => setPriorityFilter(e.target.value as any)}>
               <MenuItem value="all">All ({tickets.length})</MenuItem>

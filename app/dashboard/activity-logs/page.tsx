@@ -105,8 +105,8 @@ export default function ActivityLogsPage() {
             }}
           />
         </Grid>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <FormControl fullWidth>
+        <Grid size={{ xs: 'auto', md: 'auto' }}>
+          <FormControl sx={{ minWidth: 150 }}>
             <InputLabel>Action Type</InputLabel>
             <Select
               value={actionFilter}
@@ -122,8 +122,8 @@ export default function ActivityLogsPage() {
             </Select>
           </FormControl>
         </Grid>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <FormControl fullWidth>
+        <Grid size={{ xs: 'auto', md: 'auto' }}>
+          <FormControl sx={{ minWidth: 150 }}>
             <InputLabel>Entity Type</InputLabel>
             <Select
               value={entityFilter}

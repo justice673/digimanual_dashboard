@@ -103,7 +103,7 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            borderRadius: '8px',
+            borderRadius: '24px',
             '&:hover .MuiOutlinedInput-notchedOutline': {
               borderColor: '#C866FF',
             },

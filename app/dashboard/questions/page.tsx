@@ -112,8 +112,8 @@ export default function QuestionsPage() {
             }}
           />
         </Grid>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <FormControl fullWidth>
+        <Grid size={{ xs: 'auto', md: 'auto' }}>
+          <FormControl sx={{ minWidth: 150 }}>
             <InputLabel>Status</InputLabel>
             <Select value={statusFilter} label="Status" onChange={(e) => setStatusFilter(e.target.value as any)}>
               <MenuItem value="all">All ({questions.length})</MenuItem>

@@ -189,14 +189,24 @@ export default function ManualsPage() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', sm: 'row' },
+          justifyContent: 'space-between', 
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          gap: { xs: 2, sm: 0 },
+          mb: 4 
+        }}
+      >
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 600, fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
           Manual Management
         </Typography>
         <Button
           variant="contained"
           startIcon={<Plus size={18} />}
           onClick={handleCreate}
+          sx={{ width: 'auto' }}
         >
           Create Manual
         </Button>
@@ -214,8 +224,8 @@ export default function ManualsPage() {
             }}
           />
         </Grid>
-        <Grid size={{ xs: 12, md: 2 }}>
-          <FormControl fullWidth>
+        <Grid size={{ xs: 'auto', md: 'auto' }}>
+          <FormControl sx={{ minWidth: 150 }}>
             <InputLabel>Status</InputLabel>
             <Select value={statusFilter} label="Status" onChange={(e) => setStatusFilter(e.target.value as any)}>
               <MenuItem value="all">All ({manuals.length})</MenuItem>
@@ -230,8 +240,8 @@ export default function ManualsPage() {
             </Select>
           </FormControl>
         </Grid>
-        <Grid size={{ xs: 12, md: 2 }}>
-          <FormControl fullWidth>
+        <Grid size={{ xs: 'auto', md: 'auto' }}>
+          <FormControl sx={{ minWidth: 150 }}>
             <InputLabel>Subject</InputLabel>
             <Select value={subjectFilter} label="Subject" onChange={(e) => setSubjectFilter(e.target.value)}>
               <MenuItem value="all">All ({manuals.length})</MenuItem>
@@ -246,8 +256,8 @@ export default function ManualsPage() {
             </Select>
           </FormControl>
         </Grid>
-        <Grid size={{ xs: 12, md: 2 }}>
-          <FormControl fullWidth>
+        <Grid size={{ xs: 'auto', md: 'auto' }}>
+          <FormControl sx={{ minWidth: 150 }}>
             <InputLabel>Level</InputLabel>
             <Select value={levelFilter} label="Level" onChange={(e) => setLevelFilter(e.target.value as any)}>
               <MenuItem value="all">All ({manuals.length})</MenuItem>
@@ -262,10 +272,20 @@ export default function ManualsPage() {
             </Select>
           </FormControl>
         </Grid>
-        <Grid size={{ xs: 12, md: 2 }}>
+        <Grid size={{ xs: 'auto', md: 'auto' }}>
           <Button
             variant="outlined"
-            fullWidth
+            sx={{
+              width: 'auto',
+              backgroundColor: 'white',
+              borderColor: 'primary.main',
+              color: 'primary.main',
+              '&:hover': {
+                backgroundColor: 'primary.light',
+                borderColor: 'primary.main',
+                color: 'white',
+              },
+            }}
             onClick={() => {
               setSearchQuery('');
               setStatusFilter('all');

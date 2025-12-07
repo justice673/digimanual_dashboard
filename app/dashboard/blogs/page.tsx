@@ -189,14 +189,24 @@ export default function BlogsPage() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', sm: 'row' },
+          justifyContent: 'space-between', 
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          gap: { xs: 2, sm: 0 },
+          mb: 4 
+        }}
+      >
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 600, fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
           Blog Management
         </Typography>
         <Button
           variant="contained"
           startIcon={<Plus size={18} />}
           onClick={handleCreate}
+          sx={{ width: 'auto' }}
         >
           Create Blog
         </Button>
@@ -214,8 +224,8 @@ export default function BlogsPage() {
             }}
           />
         </Grid>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <FormControl fullWidth>
+        <Grid size={{ xs: 'auto', md: 'auto' }}>
+          <FormControl sx={{ minWidth: 150 }}>
             <InputLabel>Status</InputLabel>
             <Select value={statusFilter} label="Status" onChange={(e) => setStatusFilter(e.target.value as any)}>
               <MenuItem value="all">All ({blogs.length})</MenuItem>

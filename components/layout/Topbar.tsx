@@ -30,7 +30,7 @@ import { useRouter } from 'next/navigation';
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
-  borderRadius: theme.shape.borderRadius,
+  borderRadius: '24px',
   backgroundColor: alpha(theme.palette.common.black, 0.05),
   '&:hover': {
     backgroundColor: alpha(theme.palette.common.black, 0.08),

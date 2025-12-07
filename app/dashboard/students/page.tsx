@@ -221,7 +221,7 @@ export default function StudentsPage() {
           variant="contained" 
           startIcon={<Plus size={18} />} 
           onClick={handleCreate}
-          fullWidth={isMobile}
+          sx={{ width: 'auto' }}
         >
           Add Student
         </Button>
@@ -239,8 +239,8 @@ export default function StudentsPage() {
             }}
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-          <FormControl fullWidth>
+        <Grid size={{ xs: 'auto', md: 'auto' }}>
+          <FormControl sx={{ minWidth: 150 }}>
             <InputLabel>Status</InputLabel>
             <Select
               value={statusFilter}
@@ -259,8 +259,8 @@ export default function StudentsPage() {
             </Select>
           </FormControl>
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-          <FormControl fullWidth>
+        <Grid size={{ xs: 'auto', md: 'auto' }}>
+          <FormControl sx={{ minWidth: 150 }}>
             <InputLabel>Gender</InputLabel>
             <Select
               value={genderFilter}
@@ -279,30 +279,28 @@ export default function StudentsPage() {
             </Select>
           </FormControl>
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <Box sx={{ display: 'flex', justifyContent: { xs: 'stretch', md: 'flex-start' } }}>
-            <Button
-              variant="outlined"
-              fullWidth={isMobile}
-              onClick={() => {
-                setSearchQuery('');
-                setStatusFilter('all');
-                setGenderFilter('all');
-              }}
-              sx={{
-                backgroundColor: 'white',
+        <Grid size={{ xs: 'auto', md: 'auto' }}>
+          <Button
+            variant="outlined"
+            sx={{
+              width: 'auto',
+              backgroundColor: 'white',
+              borderColor: 'primary.main',
+              color: 'primary.main',
+              '&:hover': {
+                backgroundColor: 'primary.light',
                 borderColor: 'primary.main',
-                color: 'primary.main',
-                '&:hover': {
-                  backgroundColor: 'primary.light',
-                  borderColor: 'primary.main',
-                  color: 'white',
-                },
-              }}
-            >
-              Clear Filters
-            </Button>
-          </Box>
+                color: 'white',
+              },
+            }}
+            onClick={() => {
+              setSearchQuery('');
+              setStatusFilter('all');
+              setGenderFilter('all');
+            }}
+          >
+            Clear Filters
+          </Button>
         </Grid>
       </Grid>
 

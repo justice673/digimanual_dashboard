@@ -116,8 +116,8 @@ export default function AdminsPage() {
             }}
           />
         </Grid>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <FormControl fullWidth>
+        <Grid size={{ xs: 'auto', md: 'auto' }}>
+          <FormControl sx={{ minWidth: 150 }}>
             <InputLabel>Role</InputLabel>
             <Select value={roleFilter} label="Role" onChange={(e) => setRoleFilter(e.target.value)}>
               <MenuItem value="all">All ({admins.length})</MenuItem>

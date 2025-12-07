@@ -110,8 +110,8 @@ export default function CommentsPage() {
             }}
           />
         </Grid>
-        <Grid size={{ xs: 12, md: 3 }}>
-          <FormControl fullWidth>
+        <Grid size={{ xs: 'auto', md: 'auto' }}>
+          <FormControl sx={{ minWidth: 150 }}>
             <InputLabel>Status</InputLabel>
             <Select value={statusFilter} label="Status" onChange={(e) => setStatusFilter(e.target.value as any)}>
               <MenuItem value="all">All ({comments.length})</MenuItem>
@@ -126,8 +126,8 @@ export default function CommentsPage() {
             </Select>
           </FormControl>
         </Grid>
-        <Grid size={{ xs: 12, md: 3 }}>
-          <FormControl fullWidth>
+        <Grid size={{ xs: 'auto', md: 'auto' }}>
+          <FormControl sx={{ minWidth: 150 }}>
             <InputLabel>Entity Type</InputLabel>
             <Select value={entityFilter} label="Entity Type" onChange={(e) => setEntityFilter(e.target.value as any)}>
               <MenuItem value="all">All ({comments.length})</MenuItem>
