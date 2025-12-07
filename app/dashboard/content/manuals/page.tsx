@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Typography,
   Box,
@@ -11,13 +11,17 @@ import {
   Select,
   FormControl,
   InputLabel,
+  useMediaQuery,
+  useTheme,
+  IconButton,
 } from '@mui/material';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Filter } from 'lucide-react';
 import { DataTable } from '@/components/ui/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
 import { ViewModal } from '@/components/ui/ViewModal';
 import { FormModal } from '@/components/ui/FormModal';
+import { FilterModal } from '@/components/ui/FilterModal';
 import { mockManuals } from '@/lib/data/mockManuals';
 import { Manual } from '@/lib/types/manual';
 import { toast } from 'sonner';
@@ -25,9 +29,19 @@ import { ManualDetailView } from '@/components/manuals/ManualDetailView';
 import { ManualForm, ManualFormRef } from '@/components/manuals/ManualForm';
 
 export default function ManualsPage() {
+  const theme = useTheme();
+  const matches = useMediaQuery(theme.breakpoints.down('sm'));
+  const [mounted, setMounted] = useState(false);
   const [manuals, setManuals] = useState<Manual[]>(mockManuals);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isMobile = mounted && matches;
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'published'>('all');
+  const [filterModal, setFilterModal] = useState(false);
   const [subjectFilter, setSubjectFilter] = useState<string>('all');
   const [levelFilter, setLevelFilter] = useState<'all' | 'O' | 'A'>('all');
   const [page, setPage] = useState(0);
@@ -202,30 +216,127 @@ export default function ManualsPage() {
         <Typography variant="h4" component="h1" sx={{ fontWeight: 600, fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
           Manual Management
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<Plus size={18} />}
-          onClick={handleCreate}
-          sx={{ width: 'auto' }}
-        >
-          Create Manual
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'row', sm: 'row' }, width: { xs: '100%', sm: 'auto' } }}>
+          <Button
+            variant="contained"
+            startIcon={<Plus size={18} />}
+            onClick={handleCreate}
+            sx={{ width: 'auto' }}
+          >
+            Create Manual
+          </Button>
+          {!isMobile && (
+            <Button
+              variant="outlined"
+              sx={{
+                width: 'auto',
+                backgroundColor: 'white',
+                borderColor: 'primary.main',
+                color: 'primary.main',
+                '&:hover': {
+                  backgroundColor: 'primary.light',
+                  borderColor: 'primary.main',
+                  color: 'white',
+                },
+              }}
+              onClick={() => {
+                setSearchQuery('');
+                setStatusFilter('all');
+                setSubjectFilter('all');
+                setLevelFilter('all');
+              }}
+            >
+              Clear
+            </Button>
+          )}
+        </Box>
       </Box>
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <TextField
-            fullWidth
-            placeholder="Search manuals..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            InputProps={{
-              startAdornment: <Search size={20} style={{ marginRight: 8, color: 'inherit', opacity: 0.6 }} />,
-            }}
-          />
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <TextField
+              fullWidth
+              placeholder="Search manuals..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              InputProps={{
+                startAdornment: <Search size={20} style={{ marginRight: 8, color: 'inherit', opacity: 0.6 }} />,
+              }}
+            />
+            {isMobile && (
+              <IconButton
+                onClick={() => setFilterModal(true)}
+                sx={{
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: '12px',
+                  minWidth: 48,
+                  height: 48,
+                }}
+              >
+                <Filter size={20} />
+              </IconButton>
+            )}
+          </Box>
         </Grid>
-        <Grid size={{ xs: 'auto', md: 'auto' }}>
-          <FormControl sx={{ minWidth: 150 }}>
+        {!isMobile && (
+          <>
+            <Grid size={{ xs: 'auto', md: 'auto' }}>
+              <FormControl sx={{ minWidth: 150 }}>
+                <InputLabel>Status</InputLabel>
+                <Select value={statusFilter} label="Status" onChange={(e) => setStatusFilter(e.target.value as any)}>
+                  <MenuItem value="all">All ({manuals.length})</MenuItem>
+                  {availableStatuses.map((status) => {
+                    const count = manuals.filter((m) => m.status === status).length;
+                    return (
+                      <MenuItem key={status} value={status}>
+                        {status.charAt(0).toUpperCase() + status.slice(1)} ({count})
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 'auto', md: 'auto' }}>
+              <FormControl sx={{ minWidth: 150 }}>
+                <InputLabel>Subject</InputLabel>
+                <Select value={subjectFilter} label="Subject" onChange={(e) => setSubjectFilter(e.target.value)}>
+                  <MenuItem value="all">All ({manuals.length})</MenuItem>
+                  {availableSubjects.map((subject) => {
+                    const count = manuals.filter((m) => m.subject === subject).length;
+                    return (
+                      <MenuItem key={subject} value={subject}>
+                        {subject} ({count})
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 'auto', md: 'auto' }}>
+              <FormControl sx={{ minWidth: 150 }}>
+                <InputLabel>Level</InputLabel>
+                <Select value={levelFilter} label="Level" onChange={(e) => setLevelFilter(e.target.value as any)}>
+                  <MenuItem value="all">All ({manuals.length})</MenuItem>
+                  {availableLevels.map((level) => {
+                    const count = manuals.filter((m) => m.level === level).length;
+                    return (
+                      <MenuItem key={level} value={level}>
+                        {level}-Level ({count})
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Grid>
+          </>
+        )}
+      </Grid>
+
+      {isMobile && (
+        <FilterModal open={filterModal} onClose={() => setFilterModal(false)}>
+          <FormControl fullWidth>
             <InputLabel>Status</InputLabel>
             <Select value={statusFilter} label="Status" onChange={(e) => setStatusFilter(e.target.value as any)}>
               <MenuItem value="all">All ({manuals.length})</MenuItem>
@@ -239,9 +350,7 @@ export default function ManualsPage() {
               })}
             </Select>
           </FormControl>
-        </Grid>
-        <Grid size={{ xs: 'auto', md: 'auto' }}>
-          <FormControl sx={{ minWidth: 150 }}>
+          <FormControl fullWidth>
             <InputLabel>Subject</InputLabel>
             <Select value={subjectFilter} label="Subject" onChange={(e) => setSubjectFilter(e.target.value)}>
               <MenuItem value="all">All ({manuals.length})</MenuItem>
@@ -255,9 +364,7 @@ export default function ManualsPage() {
               })}
             </Select>
           </FormControl>
-        </Grid>
-        <Grid size={{ xs: 'auto', md: 'auto' }}>
-          <FormControl sx={{ minWidth: 150 }}>
+          <FormControl fullWidth>
             <InputLabel>Level</InputLabel>
             <Select value={levelFilter} label="Level" onChange={(e) => setLevelFilter(e.target.value as any)}>
               <MenuItem value="all">All ({manuals.length})</MenuItem>
@@ -271,12 +378,10 @@ export default function ManualsPage() {
               })}
             </Select>
           </FormControl>
-        </Grid>
-        <Grid size={{ xs: 'auto', md: 'auto' }}>
           <Button
             variant="outlined"
+            fullWidth
             sx={{
-              width: 'auto',
               backgroundColor: 'white',
               borderColor: 'primary.main',
               color: 'primary.main',
@@ -291,12 +396,13 @@ export default function ManualsPage() {
               setStatusFilter('all');
               setSubjectFilter('all');
               setLevelFilter('all');
+              setFilterModal(false);
             }}
           >
-            Clear
+            Clear Filters
           </Button>
-        </Grid>
-      </Grid>
+        </FilterModal>
+      )}
 
       <DataTable
         columns={columns}

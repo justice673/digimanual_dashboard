@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   Drawer,
@@ -32,8 +32,13 @@ export function SlideModal({
   height = '100%',
 }: SlideModalProps) {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const matches = useMediaQuery(theme.breakpoints.down('sm'));
+  const [mounted, setMounted] = useState(false);
   
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden';
@@ -45,6 +50,7 @@ export function SlideModal({
     };
   }, [open]);
 
+  const isMobile = mounted && matches;
   const modalWidth = isMobile ? '100%' : width;
 
   return (

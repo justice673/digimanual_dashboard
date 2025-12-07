@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Typography,
   Box,
@@ -14,13 +14,14 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Filter } from 'lucide-react';
 import { DataTable } from '@/components/ui/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { Chip } from '@mui/material';
+import { Chip, IconButton } from '@mui/material';
 import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
 import { ViewModal } from '@/components/ui/ViewModal';
 import { FormModal } from '@/components/ui/FormModal';
+import { FilterModal } from '@/components/ui/FilterModal';
 import { mockStudents } from '@/lib/data/mockStudents';
 import { Student } from '@/lib/types/student';
 import { toast } from 'sonner';
@@ -29,8 +30,15 @@ import { StudentForm, StudentFormRef } from '@/components/students/StudentForm';
 
 export default function StudentsPage() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const matches = useMediaQuery(theme.breakpoints.down('sm'));
+  const [mounted, setMounted] = useState(false);
   const [students, setStudents] = useState<Student[]>(mockStudents);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isMobile = mounted && matches;
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [genderFilter, setGenderFilter] = useState<'all' | 'male' | 'female' | 'other'>('all');
@@ -49,6 +57,7 @@ export default function StudentsPage() {
     student: null,
   });
   const [createModal, setCreateModal] = useState(false);
+  const [filterModal, setFilterModal] = useState(false);
   const formRef = useRef<StudentFormRef>(null);
 
   const filteredStudents = useMemo(() => {
@@ -217,30 +226,118 @@ export default function StudentsPage() {
         <Typography variant="h4" component="h1" sx={{ fontWeight: 600, fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
           Student Management
         </Typography>
-        <Button 
-          variant="contained" 
-          startIcon={<Plus size={18} />} 
-          onClick={handleCreate}
-          sx={{ width: 'auto' }}
-        >
-          Add Student
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'row', sm: 'row' }, width: { xs: '100%', sm: 'auto' } }}>
+          <Button 
+            variant="contained" 
+            startIcon={<Plus size={18} />} 
+            onClick={handleCreate}
+            sx={{ width: 'auto' }}
+          >
+            Add Student
+          </Button>
+          {!isMobile && (
+            <Button
+              variant="outlined"
+              sx={{
+                width: 'auto',
+                backgroundColor: 'white',
+                borderColor: 'primary.main',
+                color: 'primary.main',
+                '&:hover': {
+                  backgroundColor: 'primary.light',
+                  borderColor: 'primary.main',
+                  color: 'white',
+                },
+              }}
+              onClick={() => {
+                setSearchQuery('');
+                setStatusFilter('all');
+                setGenderFilter('all');
+              }}
+            >
+              Clear Filters
+            </Button>
+          )}
+        </Box>
       </Box>
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <TextField
-            fullWidth
-            placeholder="Search by name or email..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            InputProps={{
-              startAdornment: <Search size={20} style={{ marginRight: 8, color: 'inherit', opacity: 0.6 }} />,
-            }}
-          />
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <TextField
+              fullWidth
+              placeholder="Search by name or email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              InputProps={{
+                startAdornment: <Search size={20} style={{ marginRight: 8, color: 'inherit', opacity: 0.6 }} />,
+              }}
+            />
+            {isMobile && (
+              <IconButton
+                onClick={() => setFilterModal(true)}
+                sx={{
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: '12px',
+                  minWidth: 48,
+                  height: 48,
+                }}
+              >
+                <Filter size={20} />
+              </IconButton>
+            )}
+          </Box>
         </Grid>
-        <Grid size={{ xs: 'auto', md: 'auto' }}>
-          <FormControl sx={{ minWidth: 150 }}>
+        {!isMobile && (
+          <>
+            <Grid size={{ xs: 'auto', md: 'auto' }}>
+              <FormControl sx={{ minWidth: 150 }}>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  value={statusFilter}
+                  label="Status"
+                  onChange={(e) => setStatusFilter(e.target.value as any)}
+                >
+                  <MenuItem value="all">All ({students.length})</MenuItem>
+                  {availableStatuses.map((status) => {
+                    const count = students.filter((s) => s.status === status).length;
+                    return (
+                      <MenuItem key={status} value={status}>
+                        {status.charAt(0).toUpperCase() + status.slice(1)} ({count})
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 'auto', md: 'auto' }}>
+              <FormControl sx={{ minWidth: 150 }}>
+                <InputLabel>Gender</InputLabel>
+                <Select
+                  value={genderFilter}
+                  label="Gender"
+                  onChange={(e) => setGenderFilter(e.target.value as any)}
+                >
+                  <MenuItem value="all">All ({students.length})</MenuItem>
+                  {availableGenders.map((gender) => {
+                    const count = students.filter((s) => s.gender === gender).length;
+                    return (
+                      <MenuItem key={gender} value={gender}>
+                        {gender.charAt(0).toUpperCase() + gender.slice(1)} ({count})
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Grid>
+          </>
+        )}
+      </Grid>
+
+      {isMobile && (
+        <FilterModal open={filterModal} onClose={() => setFilterModal(false)}>
+          <FormControl fullWidth>
             <InputLabel>Status</InputLabel>
             <Select
               value={statusFilter}
@@ -258,9 +355,7 @@ export default function StudentsPage() {
               })}
             </Select>
           </FormControl>
-        </Grid>
-        <Grid size={{ xs: 'auto', md: 'auto' }}>
-          <FormControl sx={{ minWidth: 150 }}>
+          <FormControl fullWidth>
             <InputLabel>Gender</InputLabel>
             <Select
               value={genderFilter}
@@ -278,12 +373,10 @@ export default function StudentsPage() {
               })}
             </Select>
           </FormControl>
-        </Grid>
-        <Grid size={{ xs: 'auto', md: 'auto' }}>
           <Button
             variant="outlined"
+            fullWidth
             sx={{
-              width: 'auto',
               backgroundColor: 'white',
               borderColor: 'primary.main',
               color: 'primary.main',
@@ -297,12 +390,13 @@ export default function StudentsPage() {
               setSearchQuery('');
               setStatusFilter('all');
               setGenderFilter('all');
+              setFilterModal(false);
             }}
           >
             Clear Filters
           </Button>
-        </Grid>
-      </Grid>
+        </FilterModal>
+      )}
 
       <DataTable
         columns={columns}

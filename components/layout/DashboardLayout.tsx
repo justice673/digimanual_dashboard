@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Box, Toolbar, useMediaQuery, useTheme } from '@mui/material';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
@@ -12,9 +13,16 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const matches = useMediaQuery(theme.breakpoints.down('md'));
   const { isCollapsed } = useSidebarStore();
-  const sidebarWidth = isMobile ? 0 : isCollapsed ? 64 : 280;
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Use CSS breakpoints for width calculation to avoid hydration issues
+  const sidebarWidth = isCollapsed ? 64 : 280;
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: 'background.default' }}>
@@ -24,8 +32,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         sx={{
           flexGrow: 1,
           width: { xs: '100%', md: `calc(100% - ${sidebarWidth}px)` },
+          ml: { xs: 0, md: `${sidebarWidth}px` },
           backgroundColor: 'background.default',
-          transition: 'width 0.3s ease',
+          transition: 'width 0.3s ease, margin-left 0.3s ease',
         }}
       >
         <Topbar />

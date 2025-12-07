@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Typography,
   Box,
@@ -11,13 +11,17 @@ import {
   Select,
   FormControl,
   InputLabel,
+  useMediaQuery,
+  useTheme,
+  IconButton,
 } from '@mui/material';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Filter } from 'lucide-react';
 import { DataTable } from '@/components/ui/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
 import { ViewModal } from '@/components/ui/ViewModal';
 import { FormModal } from '@/components/ui/FormModal';
+import { FilterModal } from '@/components/ui/FilterModal';
 import { mockBlogs } from '@/lib/data/mockBlogs';
 import { Blog } from '@/lib/data/mockBlogs';
 import { toast } from 'sonner';
@@ -25,9 +29,19 @@ import { BlogDetailView } from '@/components/blogs/BlogDetailView';
 import { BlogForm, BlogFormRef } from '@/components/blogs/BlogForm';
 
 export default function BlogsPage() {
+  const theme = useTheme();
+  const matches = useMediaQuery(theme.breakpoints.down('sm'));
+  const [mounted, setMounted] = useState(false);
   const [blogs, setBlogs] = useState<Blog[]>(mockBlogs);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isMobile = mounted && matches;
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'published'>('all');
+  const [filterModal, setFilterModal] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; blog: Blog | null }>({
@@ -213,19 +227,56 @@ export default function BlogsPage() {
       </Box>
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid size={{ xs: 12, md: 8 }}>
-          <TextField
-            fullWidth
-            placeholder="Search blogs..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            InputProps={{
-              startAdornment: <Search size={20} style={{ marginRight: 8, color: 'inherit', opacity: 0.6 }} />,
-            }}
-          />
+        <Grid size={{ xs: 12, sm: 6, md: 8 }}>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <TextField
+              fullWidth
+              placeholder="Search blogs..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              InputProps={{
+                startAdornment: <Search size={20} style={{ marginRight: 8, color: 'inherit', opacity: 0.6 }} />,
+              }}
+            />
+            {isMobile && (
+              <IconButton
+                onClick={() => setFilterModal(true)}
+                sx={{
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: '12px',
+                  minWidth: 48,
+                  height: 48,
+                }}
+              >
+                <Filter size={20} />
+              </IconButton>
+            )}
+          </Box>
         </Grid>
-        <Grid size={{ xs: 'auto', md: 'auto' }}>
-          <FormControl sx={{ minWidth: 150 }}>
+        {!isMobile && (
+          <Grid size={{ xs: 'auto', md: 'auto' }}>
+            <FormControl sx={{ minWidth: 150 }}>
+              <InputLabel>Status</InputLabel>
+              <Select value={statusFilter} label="Status" onChange={(e) => setStatusFilter(e.target.value as any)}>
+                <MenuItem value="all">All ({blogs.length})</MenuItem>
+                {availableStatuses.map((status) => {
+                  const count = blogs.filter((b) => b.status === status).length;
+                  return (
+                    <MenuItem key={status} value={status}>
+                      {status.charAt(0).toUpperCase() + status.slice(1)} ({count})
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+          </Grid>
+        )}
+      </Grid>
+
+      {isMobile && (
+        <FilterModal open={filterModal} onClose={() => setFilterModal(false)}>
+          <FormControl fullWidth>
             <InputLabel>Status</InputLabel>
             <Select value={statusFilter} label="Status" onChange={(e) => setStatusFilter(e.target.value as any)}>
               <MenuItem value="all">All ({blogs.length})</MenuItem>
@@ -239,8 +290,29 @@ export default function BlogsPage() {
               })}
             </Select>
           </FormControl>
-        </Grid>
-      </Grid>
+          <Button
+            variant="outlined"
+            fullWidth
+            sx={{
+              backgroundColor: 'white',
+              borderColor: 'primary.main',
+              color: 'primary.main',
+              '&:hover': {
+                backgroundColor: 'primary.light',
+                borderColor: 'primary.main',
+                color: 'white',
+              },
+            }}
+            onClick={() => {
+              setSearchQuery('');
+              setStatusFilter('all');
+              setFilterModal(false);
+            }}
+          >
+            Clear Filters
+          </Button>
+        </FilterModal>
+      )}
 
       <DataTable
         columns={columns}

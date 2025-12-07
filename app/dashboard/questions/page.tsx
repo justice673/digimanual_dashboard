@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Typography,
@@ -14,8 +14,11 @@ import {
   InputLabel,
   IconButton,
   Tooltip,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
-import { Search, CheckCircle, X, Eye } from 'lucide-react';
+import { Search, CheckCircle, X, Eye, Filter } from 'lucide-react';
+import { FilterModal } from '@/components/ui/FilterModal';
 import { DataTable } from '@/components/ui/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { mockQuestions } from '@/lib/data/mockQuestions';
@@ -24,9 +27,19 @@ import { toast } from 'sonner';
 
 export default function QuestionsPage() {
   const router = useRouter();
+  const theme = useTheme();
+  const matches = useMediaQuery(theme.breakpoints.down('sm'));
+  const [mounted, setMounted] = useState(false);
   const [questions, setQuestions] = useState<Question[]>(mockQuestions);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isMobile = mounted && matches;
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [filterModal, setFilterModal] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -101,19 +114,56 @@ export default function QuestionsPage() {
       </Typography>
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid size={{ xs: 12, md: 8 }}>
-          <TextField
-            fullWidth
-            placeholder="Search questions..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            InputProps={{
-              startAdornment: <Search size={20} style={{ marginRight: 8, color: 'inherit', opacity: 0.6 }} />,
-            }}
-          />
+        <Grid size={{ xs: 12, sm: 6, md: 8 }}>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <TextField
+              fullWidth
+              placeholder="Search questions..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              InputProps={{
+                startAdornment: <Search size={20} style={{ marginRight: 8, color: 'inherit', opacity: 0.6 }} />,
+              }}
+            />
+            {isMobile && (
+              <IconButton
+                onClick={() => setFilterModal(true)}
+                sx={{
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: '12px',
+                  minWidth: 48,
+                  height: 48,
+                }}
+              >
+                <Filter size={20} />
+              </IconButton>
+            )}
+          </Box>
         </Grid>
-        <Grid size={{ xs: 'auto', md: 'auto' }}>
-          <FormControl sx={{ minWidth: 150 }}>
+        {!isMobile && (
+          <Grid size={{ xs: 'auto', md: 'auto' }}>
+            <FormControl sx={{ minWidth: 150 }}>
+              <InputLabel>Status</InputLabel>
+              <Select value={statusFilter} label="Status" onChange={(e) => setStatusFilter(e.target.value as any)}>
+                <MenuItem value="all">All ({questions.length})</MenuItem>
+                {availableStatuses.map((status) => {
+                  const count = questions.filter((q) => q.status === status).length;
+                  return (
+                    <MenuItem key={status} value={status}>
+                      {status.charAt(0).toUpperCase() + status.slice(1)} ({count})
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+          </Grid>
+        )}
+      </Grid>
+
+      {isMobile && (
+        <FilterModal open={filterModal} onClose={() => setFilterModal(false)}>
+          <FormControl fullWidth>
             <InputLabel>Status</InputLabel>
             <Select value={statusFilter} label="Status" onChange={(e) => setStatusFilter(e.target.value as any)}>
               <MenuItem value="all">All ({questions.length})</MenuItem>
@@ -127,8 +177,29 @@ export default function QuestionsPage() {
               })}
             </Select>
           </FormControl>
-        </Grid>
-      </Grid>
+          <Button
+            variant="outlined"
+            fullWidth
+            sx={{
+              backgroundColor: 'white',
+              borderColor: 'primary.main',
+              color: 'primary.main',
+              '&:hover': {
+                backgroundColor: 'primary.light',
+                borderColor: 'primary.main',
+                color: 'white',
+              },
+            }}
+            onClick={() => {
+              setSearchQuery('');
+              setStatusFilter('all');
+              setFilterModal(false);
+            }}
+          >
+            Clear Filters
+          </Button>
+        </FilterModal>
+      )}
 
       <DataTable
         columns={columns}

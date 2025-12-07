@@ -25,7 +25,7 @@ import { styled, alpha } from '@mui/material/styles';
 import { useUserStore } from '@/lib/stores/userStore';
 import { useSidebarStore } from '@/lib/stores/sidebarStore';
 import { DateFilter } from '@/components/ui/DateFilter';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 const Search = styled('div')(({ theme }) => ({
@@ -72,13 +72,19 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 export function Topbar() {
   const { user, logout } = useUserStore();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const matches = useMediaQuery(theme.breakpoints.down('md'));
   const { isCollapsed, toggle } = useSidebarStore();
   const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [notificationAnchor, setNotificationAnchor] = useState<null | HTMLElement>(null);
+  const [mounted, setMounted] = useState(false);
 
-  const sidebarWidth = isMobile ? 0 : isCollapsed ? 64 : 280;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isMobile = mounted && matches;
+  const sidebarWidth = isCollapsed ? 64 : 280;
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);

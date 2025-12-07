@@ -36,7 +36,7 @@ import {
   X,
 } from 'lucide-react';
 import { useSidebarStore } from '@/lib/stores/sidebarStore';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const DRAWER_WIDTH = 280;
 const DRAWER_WIDTH_COLLAPSED = 64;
@@ -80,9 +80,16 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const matches = useMediaQuery(theme.breakpoints.down('md'));
   const { isCollapsed, setCollapsed, isOpen, closeMobile } = useSidebarStore();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isMobile = mounted && matches;
 
   const drawerWidth = isCollapsed ? DRAWER_WIDTH_COLLAPSED : DRAWER_WIDTH;
 
