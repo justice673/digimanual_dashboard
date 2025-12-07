@@ -62,11 +62,34 @@ export function ManualDetailView({ manual }: ManualDetailViewProps) {
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Topics
+                  Units ({manual.units.length})
                 </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                  {manual.topics.map((topic) => (
-                    <Chip key={topic} label={topic} size="small" />
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 2 }}>
+                  {manual.units.map((unit) => (
+                    <Box
+                      key={unit.id}
+                      sx={{
+                        p: 2,
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        borderRadius: 2,
+                        backgroundColor: 'background.default',
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                        <Box>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                            {unit.title}
+                          </Typography>
+                          {unit.description && (
+                            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                              {unit.description}
+                            </Typography>
+                          )}
+                        </Box>
+                        <Chip label={`${unit.questionCount} questions`} size="small" color="primary" />
+                      </Box>
+                    </Box>
                   ))}
                 </Box>
               </Grid>

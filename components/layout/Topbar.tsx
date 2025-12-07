@@ -116,11 +116,11 @@ export function Topbar() {
       position="fixed"
       sx={{
         width: { xs: '100%', md: `calc(100% - ${sidebarWidth}px)` },
-        ml: { xs: 0, md: `${sidebarWidth}px` },
+        ml: { xs: 0, md: 0 }, // Remove margin-left, sidebar handles positioning
         backgroundColor: 'background.paper',
         color: 'text.primary',
         boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-        transition: 'width 0.3s ease, margin-left 0.3s ease',
+        transition: 'width 0.3s ease',
         zIndex: (theme) => theme.zIndex.appBar,
       }}
     >

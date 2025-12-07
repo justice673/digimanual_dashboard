@@ -1,19 +1,23 @@
 'use client';
 
-import { forwardRef, useImperativeHandle } from 'react';
+import { forwardRef, useImperativeHandle, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Grid, TextField, FormControl, InputLabel, Select, MenuItem, Box, Button, Typography } from '@mui/material';
-import { Manual } from '@/lib/types/manual';
+import { Grid, TextField, FormControl, InputLabel, Select, MenuItem, Box, Button, Typography, IconButton, Divider } from '@mui/material';
+import { Manual, ManualUnit } from '@/lib/types/manual';
 import { useState } from 'react';
+import { Plus, Trash2, GripVertical } from 'lucide-react';
 
 const manualSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(1, 'Description is required'),
   subject: z.string().min(1, 'Subject is required'),
   level: z.enum(['O', 'A']),
-  topics: z.array(z.string()).min(1, 'At least one topic is required'),
+  units: z.array(z.object({
+    title: z.string().min(1, 'Unit title is required'),
+    description: z.string().optional(),
+  })).min(1, 'At least one unit is required'),
 });
 
 type ManualFormData = z.infer<typeof manualSchema>;
@@ -29,8 +33,9 @@ export interface ManualFormRef {
 
 export const ManualForm = forwardRef<ManualFormRef, ManualFormProps>(
   ({ manual, onSave }, ref) => {
-    const [topics, setTopics] = useState<string[]>(manual?.topics || []);
-    const [topicInput, setTopicInput] = useState('');
+    const [units, setUnits] = useState<Array<{ title: string; description?: string }>>(
+      manual?.units?.map(u => ({ title: u.title, description: u.description })) || []
+    );
 
     const {
       register,
@@ -47,34 +52,56 @@ export const ManualForm = forwardRef<ManualFormRef, ManualFormProps>(
             description: manual.description,
             subject: manual.subject,
             level: manual.level,
-            topics: manual.topics,
+            units: manual.units.map(u => ({ title: u.title, description: u.description })),
           }
         : {
             title: '',
             description: '',
             subject: '',
             level: 'O',
-            topics: [],
+            units: [],
           },
     });
 
-    const handleAddTopic = () => {
-      if (topicInput.trim() && !topics.includes(topicInput.trim())) {
-        const newTopics = [...topics, topicInput.trim()];
-        setTopics(newTopics);
-        setValue('topics', newTopics);
-        setTopicInput('');
-      }
+    // Sync units with form when they change
+    useEffect(() => {
+      setValue('units', units);
+    }, [units, setValue]);
+
+    const handleAddUnit = () => {
+      const newUnits = [...units, { title: `Unit ${units.length + 1}`, description: '' }];
+      setUnits(newUnits);
+      setValue('units', newUnits);
     };
 
-    const handleRemoveTopic = (topic: string) => {
-      const newTopics = topics.filter((t) => t !== topic);
-      setTopics(newTopics);
-      setValue('topics', newTopics);
+    const handleRemoveUnit = (index: number) => {
+      const newUnits = units.filter((_, i) => i !== index);
+      setUnits(newUnits);
+      setValue('units', newUnits);
+    };
+
+    const handleUnitChange = (index: number, field: 'title' | 'description', value: string) => {
+      const newUnits = [...units];
+      newUnits[index] = { ...newUnits[index], [field]: value };
+      setUnits(newUnits);
+      setValue('units', newUnits);
     };
 
     const onSubmit = (data: ManualFormData) => {
-      onSave(data);
+      // Convert form units to ManualUnit format
+      const manualUnits: ManualUnit[] = data.units.map((unit, index) => ({
+        id: manual?.units?.[index]?.id || `unit-${Date.now()}-${index}`,
+        manualId: manual?.id || '',
+        title: unit.title,
+        description: unit.description,
+        orderIndex: index + 1,
+        questionCount: manual?.units?.[index]?.questionCount || 0,
+      }));
+
+      onSave({
+        ...data,
+        units: manualUnits,
+      });
     };
 
     useImperativeHandle(ref, () => ({
@@ -147,57 +174,71 @@ export const ManualForm = forwardRef<ManualFormRef, ManualFormProps>(
             </FormControl>
           </Grid>
           <Grid size={{ xs: 12 }}>
-            <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-              Topics
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-              <TextField
-                size="small"
-                placeholder="Add topic"
-                value={topicInput}
-                onChange={(e) => setTopicInput(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddTopic();
-                  }
-                }}
-                sx={{ flexGrow: 1 }}
-              />
-              <Button variant="outlined" onClick={handleAddTopic}>
-                Add
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                Units ({units.length})
+              </Typography>
+              <Button variant="outlined" startIcon={<Plus size={18} />} onClick={handleAddUnit} size="small">
+                Add Unit
               </Button>
             </Box>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {topics.map((topic) => (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {units.map((unit, index) => (
                 <Box
-                  key={topic}
+                  key={index}
                   sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    px: 2,
-                    py: 0.5,
-                    bgcolor: 'primary.light',
-                    color: 'primary.main',
+                    p: 2,
+                    border: '1px solid',
+                    borderColor: 'divider',
                     borderRadius: 2,
-                    fontSize: '0.875rem',
+                    backgroundColor: 'background.default',
                   }}
                 >
-                  {topic}
-                  <Button
-                    size="small"
-                    onClick={() => handleRemoveTopic(topic)}
-                    sx={{ minWidth: 'auto', p: 0.5 }}
-                  >
-                    ×
-                  </Button>
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start', mb: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary', mt: 1 }}>
+                      <GripVertical size={20} />
+                    </Box>
+                    <Box sx={{ flexGrow: 1 }}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label={`Unit ${index + 1} Title`}
+                        value={unit.title}
+                        onChange={(e) => handleUnitChange(index, 'title', e.target.value)}
+                        sx={{ mb: 1 }}
+                        placeholder="e.g., Unit 1: Introduction"
+                      />
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label="Description (Optional)"
+                        value={unit.description || ''}
+                        onChange={(e) => handleUnitChange(index, 'description', e.target.value)}
+                        placeholder="Brief description of this unit"
+                        multiline
+                        rows={2}
+                      />
+                    </Box>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleRemoveUnit(index)}
+                      color="error"
+                      sx={{ mt: 0.5 }}
+                    >
+                      <Trash2 size={18} />
+                    </IconButton>
+                  </Box>
                 </Box>
               ))}
+              {units.length === 0 && (
+                <Box sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
+                  <Typography variant="body2">No units added yet. Click "Add Unit" to get started.</Typography>
+                </Box>
+              )}
             </Box>
-            {errors.topics && (
+            {errors.units && (
               <Typography variant="caption" color="error" sx={{ mt: 0.5, display: 'block' }}>
-                {errors.topics.message}
+                {errors.units.message}
               </Typography>
             )}
           </Grid>
