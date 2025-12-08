@@ -34,6 +34,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  DollarSign,
 } from 'lucide-react';
 import { useSidebarStore } from '@/lib/stores/sidebarStore';
 import { useState, useEffect } from 'react';
@@ -71,6 +72,7 @@ const navItems: NavItem[] = [
   },
   { label: 'Blogs', icon: <FileText size={20} />, path: '/dashboard/blogs' },
   { label: 'Helpdesk', icon: <Headphones size={20} />, path: '/dashboard/helpdesk' },
+  { label: 'Finance', icon: <DollarSign size={20} />, path: '/dashboard/finance' },
   { label: 'Admins', icon: <Shield size={20} />, path: '/dashboard/admins' },
   { label: 'Settings', icon: <Settings size={20} />, path: '/dashboard/settings' },
   { label: 'Activity Logs', icon: <History size={20} />, path: '/dashboard/activity-logs' },
